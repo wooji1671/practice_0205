@@ -26,25 +26,50 @@ class MyStatefulWidget extends StatefulWidget {
 }
 
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
+  int _selectedIndex = 0;
+
+  static const List<Widget> _widgetOptions = <Widget>[
+    MainPage(),
+    Text(
+      'Index 1: Saved change',
+    ),
+    Text(
+      'Index 2: Settings',
+    ),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Guitar Chords Changer'),
       ),
-      body: MainPage(),
-      bottomNavigationBar: BottomAppBar(
-        child: Container(
-          height: 50,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Icon(Icons.home),
-              Icon(Icons.save_outlined),
-              Icon(Icons.settings),
-            ],
+      body: _widgetOptions.elementAt(_selectedIndex),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem> [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'home',
           ),
-        ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.save_outlined),
+            label: 'saved change'
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'settings'
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.indigo,
+        onTap: _onItemTapped,
+
       ),
     );
   }
@@ -73,10 +98,12 @@ class _MainPageState extends State<MainPage> {
               ),
             ),
             Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
               Flexible(
                 child: Container(
-                      margin: EdgeInsets.only(left:400, bottom:10),
+                    width: 100,
+                      //margin: EdgeInsets.only(left:400, bottom:10),
                       child: TextFormField(
                         controller: myController,
                         keyboardType: TextInputType.number,
@@ -88,7 +115,7 @@ class _MainPageState extends State<MainPage> {
                     ),
               ),
               Container(
-                margin: const EdgeInsets.only(left: 20, right:420),
+                margin: const EdgeInsets.only(left: 20, right:20),
                 child: Text('키만큼'),
                   ),
               ],
@@ -102,11 +129,11 @@ class _MainPageState extends State<MainPage> {
               icon: Icon(Icons.tune),
               iconSize: 40,
               tooltip: ('Chord Change'),
-              onPressed: () async{
-                print(myController.text);
+              onPressed: () {
+                //print(myController.text);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ChordChangePage()),
+                  MaterialPageRoute(builder: (context) => ChordChangePage(changeChord: myController.text,)),
                 );
               },
             ),
@@ -117,8 +144,9 @@ class _MainPageState extends State<MainPage> {
   }
 }
 
+
 class KeySelectWidget extends StatefulWidget {
-  const KeySelectWidget({Key? key}) : super(key: key);
+ const KeySelectWidget({Key? key}) : super(key: key);
 
   @override
   _KeySelectWidgetState createState() => _KeySelectWidgetState();
@@ -155,7 +183,9 @@ class _KeySelectWidgetState extends State<KeySelectWidget> {
 }
 
 class ChordChangePage extends StatefulWidget {
-  const ChordChangePage({Key? key}) : super(key: key);
+  String changeChord;
+
+  ChordChangePage({Key? key, required this.changeChord}) : super(key: key);
 
   @override
   _ChordChangePageState createState() => _ChordChangePageState();
@@ -168,7 +198,7 @@ class _ChordChangePageState extends State<ChordChangePage> {
       appBar: AppBar(
         title: const Text('Guitar Chords Changer'),
       ),
-      body: SecondPage(),
+      body: SecondPage(changeChord: widget.changeChord,),
       bottomNavigationBar: BottomAppBar(
         child: Container(
           height: 50,
@@ -187,7 +217,9 @@ class _ChordChangePageState extends State<ChordChangePage> {
 }
 
 class SecondPage extends StatelessWidget {
-  //const SecondPage({Key? key}) : super(key: key);
+  String changeChord;
+
+  SecondPage({Key? key, required this.changeChord}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -195,7 +227,8 @@ class SecondPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-            Text('myController.text'),
+            Text(changeChord),
+          Text('dropdownValue'),
         ],
       ),
     );
