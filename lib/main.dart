@@ -81,6 +81,12 @@ class _MainPageState extends State<MainPage> {
   final myController = TextEditingController();
   String dropdownValue = '올림';
 
+  void dropDownChangeFunction(String? newKey){
+    setState(() {
+      dropdownValue = newKey!;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,31 +123,7 @@ class _MainPageState extends State<MainPage> {
                 ),
               ],
             ),
-            DropdownButton(
-              value: dropdownValue,
-              // value는 리스트로 저장되어야 함
-              icon: const Icon(Icons.arrow_drop_down),
-              elevation: 16,
-              //선택창 그림자
-              style: const TextStyle(color: Colors.black),
-              underline: Container(
-                height: 2,
-                color: Colors.blueAccent,
-              ),
-              onChanged: (String? newValue) {
-                setState(() {
-                  dropdownValue = newValue!;
-                });
-              },
-              items: <String>['올림', '내림']
-                  .map<DropdownMenuItem<String>>((String value) {
-                // map() :문자열 2개를 DropdownMenuItem의 인스턴스로 변환
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(), // toList() :인스턴스 2개를 리스트로 변환
-            ),
+            KeySelectWidget(function: dropDownChangeFunction,),
             Container(
               margin: const EdgeInsets.all(40),
             ),
@@ -156,7 +138,7 @@ class _MainPageState extends State<MainPage> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => ChordChangePage(
-                            changeChord: myController.text, changeDropdown: dropdownValue,
+                            changeChord: myController.text, changeKey: dropdownValue,
                           )),
                 );
               },
@@ -169,7 +151,8 @@ class _MainPageState extends State<MainPage> {
 }
 
 class KeySelectWidget extends StatefulWidget {
-  const KeySelectWidget({Key? key}) : super(key: key);
+  Function function;
+  KeySelectWidget({Key? key, required this.function}) : super(key: key);
 
   @override
   _KeySelectWidgetState createState() => _KeySelectWidgetState();
@@ -191,10 +174,9 @@ class _KeySelectWidgetState extends State<KeySelectWidget> {
         height: 2,
         color: Colors.blueAccent,
       ),
-      onChanged: (String? newValue) {
-        setState(() {
-          dropdownValue = newValue!;
-        });
+      onChanged: (String? newValue){
+        widget.function(newValue);
+        dropdownValue = newValue!;
       },
       items: <String>['올림', '내림'].map<DropdownMenuItem<String>>((String value) {
         // map() :문자열 2개를 DropdownMenuItem의 인스턴스로 변환
@@ -209,9 +191,9 @@ class _KeySelectWidgetState extends State<KeySelectWidget> {
 
 class ChordChangePage extends StatefulWidget {
   String changeChord;
-  String changeDropdown;
+  String changeKey;
 
-  ChordChangePage({Key? key, required this.changeChord, required this.changeDropdown}) : super(key: key);
+  ChordChangePage({Key? key, required this.changeChord, required this.changeKey}) : super(key: key);
 
   @override
   _ChordChangePageState createState() => _ChordChangePageState();
@@ -225,7 +207,7 @@ class _ChordChangePageState extends State<ChordChangePage> {
         title: const Text('Guitar Chords Changer'),
       ),
       body: SecondPage(
-        changeChord: widget.changeChord, changeDropdown: widget.changeDropdown
+        changeChord: widget.changeChord, changeKey: widget.changeKey,
       ),
       bottomNavigationBar: BottomAppBar(
         child: Container(
@@ -244,11 +226,24 @@ class _ChordChangePageState extends State<ChordChangePage> {
   }
 }
 
-class SecondPage extends StatelessWidget {
+class SecondPage extends StatefulWidget {
   String changeChord;
-  String changeDropdown;
+  String changeKey;
 
-  SecondPage({Key? key, required this.changeChord, required this.changeDropdown}) : super(key: key);
+  SecondPage({Key? key, required this.changeChord, required this.changeKey}) : super(key: key);
+
+  @override
+  State<SecondPage> createState() => _SecondPageState();
+}
+
+class _SecondPageState extends State<SecondPage> {
+  var changeKeyDown = 0;
+
+  int downTuning(String newValue){
+      var parsedChangeChord = int.parse(newValue);
+      changeKeyDown = 12 - parsedChangeChord;
+      return changeKeyDown;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -256,10 +251,50 @@ class SecondPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(changeChord),
-          Text(changeDropdown),
+          Text('${widget.changeChord} 키만큼 ${widget.changeKey} 한 경우 :'),
+          (widget.changeKey == '올림')
+              ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('카포를 ${widget.changeChord}번째 프렛에 끼우고 연주'),
+                ],
+              )
+              : Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('카포를'),
+                      KeyDownWidget(function: downTuning, changeChord: widget.changeChord,),
+                      Text('번째 프렛에 끼우고 연주'),
+                    ],
+                  ),
+                  Text('또는'),
+                  Text('카포를 ${widget.changeChord}번째 프렛에 끼우고 정튜닝 후 카포 제거하고 연주'),
+                ],
+              ),
         ],
       ),
+    );
+  }
+}
+
+class KeyDownWidget extends StatefulWidget {
+  Function function;
+  String changeChord;
+  KeyDownWidget({Key? key, required this.function, required this.changeChord}) : super(key: key);
+
+  @override
+  _KeyDownWidgetState createState() => _KeyDownWidgetState();
+}
+
+class _KeyDownWidgetState extends State<KeyDownWidget> {
+  var changeKeyDown = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      ' ${widget.function(widget.changeChord)}'
     );
   }
 }
