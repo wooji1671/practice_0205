@@ -30,7 +30,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   static List<Widget> _widgetOptions = <Widget>[
     MainPage(),
-    SavedPage(),
+    SavedPage(
+      changeChord: '0', changeKey: '올림', savedMusic: '',
+    ),
     Text(
       'Index 2: Settings',
     ),
@@ -232,6 +234,8 @@ class SecondPage extends StatefulWidget {
 class _SecondPageState extends State<SecondPage> {
   final myController = TextEditingController();
   int changeKeyDown = 0;
+  List musics = <String>[];
+  String input = "";
 
   int downTuning(String newValue) {
     int parsedChangeChord = int.parse(newValue);
@@ -297,35 +301,48 @@ class _SecondPageState extends State<SecondPage> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Flexible(
-              child: Container(
-                width: 200,
-                //margin: EdgeInsets.only(left:400, bottom:10),
-                child: TextFormField(
-                  controller: myController,
-                  keyboardType: TextInputType.text,
-                  decoration: InputDecoration(
-                    helperText: '저장될 이름을 입력하세요.',
-                    hintText: 'ex) Oasis - Live Forever',
-                  ),
-                ),
-              ),
-            ),
             IconButton(
               icon: Icon(Icons.save_outlined),
               iconSize: 40,
-              padding: const EdgeInsets.only(left: 20),
               onPressed: () {
-                // Navigator.push(
-//   context,
-//   MaterialPageRoute(
-//       builder: (context) => SavedPage()
-//   ),
-// );
-                final snackBar = SnackBar(
-                  content: const Text('저장되었습니다.'),
-                );
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                          title: Text("코드 설정 저장하기"),
+                          content: TextField(
+                            decoration: InputDecoration(
+                              helperText: '저장될 이름을 입력하세요.',
+                              hintText: 'ex) Oasis - Live Forever',
+                            ),
+                            onChanged: (String value) {
+                              input = value;
+                            },
+                          ),
+                          actions: <Widget>[
+                            FlatButton(
+                                onPressed: () {
+                                  setState(() {
+                                    musics.add(input);
+                                  });
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => SavedPage(
+                                          changeChord: widget.changeChord,
+                                          changeKey: widget.changeKey,
+                                          savedMusic: input,
+                                        )),
+                                  );
+                                  final snackBar = SnackBar(
+                                    content: const Text('저장되었습니다.'),
+                                  );
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(snackBar);
+                                },
+                                child: Text("Add"))
+                          ]);
+                    });
               },
             ),
           ],
@@ -336,96 +353,69 @@ class _SecondPageState extends State<SecondPage> {
 }
 
 class SavedPage extends StatefulWidget {
-  const SavedPage({Key? key}) : super(key: key);
+  String changeChord;
+  String changeKey;
+  String savedMusic;
+
+  SavedPage({Key? key, required this.changeChord, required this.changeKey, required this.savedMusic}) : super(key: key);
 
   @override
   _SavedPageState createState() => _SavedPageState();
 }
 
 class _SavedPageState extends State<SavedPage> {
-  List todos = <String>[];
-  String input = "";
+  List musics = <String>[];
+  List chords = <int>[];
+  List keys = <String>[];
+  String? musicinput;
+  int? chordinput;
+  String? keyinput;
 
   @override
   void initState() {
     super.initState();
-    todos.add("Item1");
-    todos.add("Item2");
-    todos.add("Item3");
-    todos.add("Item4");
+    setState(() {
+      musicinput = widget.savedMusic;
+      chordinput = int.parse(widget.changeChord);
+      keyinput = widget.changeKey;
+      musics.add(musicinput);
+      chords.add(chordinput);
+      keys.add(keyinput);
+    });
+    //musics.add("Oasis- Live Forever");
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                    title: Text("Add Todolist"),
-                    content: TextField(
-                      onChanged: (String value) {
-                        input = value;
-                      },
-                    ),
-                    actions: <Widget>[
-                      FlatButton(
-                          onPressed: () {
-                            setState(() {
-                              todos.add(input);
-                            });
-                          },
-                          child: Text("Add"))
-                    ]);
-              });
+        onPressed: (){
+          // Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => MyStatefulWidget()),
+          );
         },
         child: Icon(
-          Icons.add,
+          Icons.arrow_back,
           color: Colors.white,
         ),
       ),
       body: ListView.builder(
-          itemCount: todos.length,
+          itemCount: musics.length,
           itemBuilder: (BuildContext context, int index) {
-            return Dismissible(
-                key: Key(todos[index]),
-                child: Card(
-                    child: ListTile(
-                  title: Text(todos[index]),
-                )));
+            return ListTile(
+              title: Text(musics[index]),
+              // subtitle: Text(keys[index]),
+              // trailing: Text(chords[index]),
+              subtitle: Text(
+                  (keys[index] == '올림')
+                      ? '카포를 ${chords[index]}번째 프렛에 끼우고 연주'
+                      : '카포를 ${12 - chords[index]}번째 프렛에 끼우고 연주 또는 '
+                      '카포를 ${chords[index]}번째 프렛에 끼우고 정튜닝 후 카포 제거하고 연주'
+              ),
+            );
           }),
     );
   }
 }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body: ChordSavedPage(),
-//     );
-//   }
-// }
-//
-// class ChordSavedPage extends StatelessWidget {
-//   ChordSavedPage({Key? key}) : super(key: key);
-//
-//   @override
-//   final List<String> entries = <String>['A', 'B', 'C'];
-//   final List<int> colorCodes = <int>[600, 500, 100];
-//
-//   Widget build(BuildContext context) {
-//     return ListView.builder(
-//         padding: const EdgeInsets.all(8),
-//         itemCount: entries.length,
-//         itemBuilder: (BuildContext context, int index) {
-//           return Container(
-//             height: 50,
-//             color: Colors.amber[colorCodes[index]],
-//             child: Center(child: Text('Entry ${entries[index]}')),
-//           );
-//         }
-//     );
-//   }
-// }
