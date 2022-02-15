@@ -28,11 +28,9 @@ class MyStatefulWidget extends StatefulWidget {
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _widgetOptions = <Widget>[
+  static List<Widget> _widgetOptions = <Widget>[
     MainPage(),
-    Text(
-      'Index 1: Saved change',
-    ),
+    SavedPage(),
     Text(
       'Index 2: Settings',
     ),
@@ -81,7 +79,7 @@ class _MainPageState extends State<MainPage> {
   final myController = TextEditingController();
   String dropdownValue = '올림';
 
-  void dropDownChangeFunction(String? newKey){
+  void dropDownChangeFunction(String? newKey) {
     setState(() {
       dropdownValue = newKey!;
     });
@@ -123,7 +121,9 @@ class _MainPageState extends State<MainPage> {
                 ),
               ],
             ),
-            KeySelectWidget(function: dropDownChangeFunction,),
+            KeySelectWidget(
+              function: dropDownChangeFunction,
+            ),
             Container(
               margin: const EdgeInsets.all(40),
             ),
@@ -138,7 +138,8 @@ class _MainPageState extends State<MainPage> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => ChordChangePage(
-                            changeChord: myController.text, changeKey: dropdownValue,
+                            changeChord: myController.text,
+                            changeKey: dropdownValue,
                           )),
                 );
               },
@@ -152,6 +153,7 @@ class _MainPageState extends State<MainPage> {
 
 class KeySelectWidget extends StatefulWidget {
   Function function;
+
   KeySelectWidget({Key? key, required this.function}) : super(key: key);
 
   @override
@@ -174,7 +176,7 @@ class _KeySelectWidgetState extends State<KeySelectWidget> {
         height: 2,
         color: Colors.blueAccent,
       ),
-      onChanged: (String? newValue){
+      onChanged: (String? newValue) {
         widget.function(newValue);
         dropdownValue = newValue!;
       },
@@ -193,7 +195,9 @@ class ChordChangePage extends StatefulWidget {
   String changeChord;
   String changeKey;
 
-  ChordChangePage({Key? key, required this.changeChord, required this.changeKey}) : super(key: key);
+  ChordChangePage(
+      {Key? key, required this.changeChord, required this.changeKey})
+      : super(key: key);
 
   @override
   _ChordChangePageState createState() => _ChordChangePageState();
@@ -207,20 +211,8 @@ class _ChordChangePageState extends State<ChordChangePage> {
         title: const Text('Guitar Chords Changer'),
       ),
       body: SecondPage(
-        changeChord: widget.changeChord, changeKey: widget.changeKey,
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: Container(
-          height: 50,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Icon(Icons.home),
-              Icon(Icons.save_outlined),
-              Icon(Icons.settings),
-            ],
-          ),
-        ),
+        changeChord: widget.changeChord,
+        changeKey: widget.changeKey,
       ),
     );
   }
@@ -230,71 +222,210 @@ class SecondPage extends StatefulWidget {
   String changeChord;
   String changeKey;
 
-  SecondPage({Key? key, required this.changeChord, required this.changeKey}) : super(key: key);
+  SecondPage({Key? key, required this.changeChord, required this.changeKey})
+      : super(key: key);
 
   @override
   State<SecondPage> createState() => _SecondPageState();
 }
 
 class _SecondPageState extends State<SecondPage> {
-  var changeKeyDown = 0;
+  final myController = TextEditingController();
+  int changeKeyDown = 0;
 
-  int downTuning(String newValue){
-      var parsedChangeChord = int.parse(newValue);
-      changeKeyDown = 12 - parsedChangeChord;
-      return changeKeyDown;
+  int downTuning(String newValue) {
+    int parsedChangeChord = int.parse(newValue);
+    changeKeyDown = 12 - parsedChangeChord;
+    return changeKeyDown;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('${widget.changeChord} 키만큼 ${widget.changeKey} 한 경우 :'),
-          (widget.changeKey == '올림')
-              ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('카포를 ${widget.changeChord}번째 프렛에 끼우고 연주'),
-                ],
-              )
-              : Column(
-                children: [
-                  Row(
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Column(
+          children: [
+            Text('${widget.changeChord} 키만큼 ${widget.changeKey} 한 경우 :',
+                style: TextStyle(fontSize: 25)),
+            (widget.changeKey == '올림')
+                ? Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('카포를'),
-                      KeyDownWidget(function: downTuning, changeChord: widget.changeChord,),
-                      Text('번째 프렛에 끼우고 연주'),
+                      Text(
+                        '카포를 ${widget.changeChord}번째 프렛에 끼우고 연주',
+                        style: TextStyle(
+                            fontSize: 25, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Column(
+                        children: [
+                          Text(
+                            '카포를 ${downTuning(widget.changeChord)}번째 프렛에 끼우고 연주',
+                            style: TextStyle(
+                                fontSize: 25, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            '또는',
+                            style: TextStyle(fontSize: 15),
+                          ),
+                          Text(
+                            '카포를 ${widget.changeChord}번째 프렛에 끼우고 정튜닝 후 카포 제거하고 연주',
+                            style: TextStyle(
+                                fontSize: 25, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
-                  Text('또는'),
-                  Text('카포를 ${widget.changeChord}번째 프렛에 끼우고 정튜닝 후 카포 제거하고 연주'),
-                ],
+          ],
+        ),
+        Container(
+          margin: EdgeInsets.only(top: 60),
+          child: Text(
+            '* Save Chords Change *',
+            style: TextStyle(
+                backgroundColor: Colors.blueGrey,
+                color: Colors.white,
+                fontSize: 25),
+          ),
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Container(
+                width: 200,
+                //margin: EdgeInsets.only(left:400, bottom:10),
+                child: TextFormField(
+                  controller: myController,
+                  keyboardType: TextInputType.text,
+                  decoration: InputDecoration(
+                    helperText: '저장될 이름을 입력하세요.',
+                    hintText: 'ex) Oasis - Live Forever',
+                  ),
+                ),
               ),
-        ],
-      ),
+            ),
+            IconButton(
+              icon: Icon(Icons.save_outlined),
+              iconSize: 40,
+              padding: const EdgeInsets.only(left: 20),
+              onPressed: () {
+                // Navigator.push(
+//   context,
+//   MaterialPageRoute(
+//       builder: (context) => SavedPage()
+//   ),
+// );
+                final snackBar = SnackBar(
+                  content: const Text('저장되었습니다.'),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              },
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
 
-class KeyDownWidget extends StatefulWidget {
-  Function function;
-  String changeChord;
-  KeyDownWidget({Key? key, required this.function, required this.changeChord}) : super(key: key);
+class SavedPage extends StatefulWidget {
+  const SavedPage({Key? key}) : super(key: key);
 
   @override
-  _KeyDownWidgetState createState() => _KeyDownWidgetState();
+  _SavedPageState createState() => _SavedPageState();
 }
 
-class _KeyDownWidgetState extends State<KeyDownWidget> {
-  var changeKeyDown = 0;
+class _SavedPageState extends State<SavedPage> {
+  List todos = <String>[];
+  String input = "";
+
+  @override
+  void initState() {
+    super.initState();
+    todos.add("Item1");
+    todos.add("Item2");
+    todos.add("Item3");
+    todos.add("Item4");
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      ' ${widget.function(widget.changeChord)}'
+    return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                    title: Text("Add Todolist"),
+                    content: TextField(
+                      onChanged: (String value) {
+                        input = value;
+                      },
+                    ),
+                    actions: <Widget>[
+                      FlatButton(
+                          onPressed: () {
+                            setState(() {
+                              todos.add(input);
+                            });
+                          },
+                          child: Text("Add"))
+                    ]);
+              });
+        },
+        child: Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
+      ),
+      body: ListView.builder(
+          itemCount: todos.length,
+          itemBuilder: (BuildContext context, int index) {
+            return Dismissible(
+                key: Key(todos[index]),
+                child: Card(
+                    child: ListTile(
+                  title: Text(todos[index]),
+                )));
+          }),
     );
   }
 }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       body: ChordSavedPage(),
+//     );
+//   }
+// }
+//
+// class ChordSavedPage extends StatelessWidget {
+//   ChordSavedPage({Key? key}) : super(key: key);
+//
+//   @override
+//   final List<String> entries = <String>['A', 'B', 'C'];
+//   final List<int> colorCodes = <int>[600, 500, 100];
+//
+//   Widget build(BuildContext context) {
+//     return ListView.builder(
+//         padding: const EdgeInsets.all(8),
+//         itemCount: entries.length,
+//         itemBuilder: (BuildContext context, int index) {
+//           return Container(
+//             height: 50,
+//             color: Colors.amber[colorCodes[index]],
+//             child: Center(child: Text('Entry ${entries[index]}')),
+//           );
+//         }
+//     );
+//   }
+// }
