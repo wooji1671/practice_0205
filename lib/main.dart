@@ -237,12 +237,6 @@ class _SecondPageState extends State<SecondPage> {
   List musics = <String>[];
   String input = "";
 
-  int downTuning(String newValue) {
-    int parsedChangeChord = int.parse(newValue);
-    changeKeyDown = 12 - parsedChangeChord;
-    return changeKeyDown;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -269,7 +263,7 @@ class _SecondPageState extends State<SecondPage> {
                       Column(
                         children: [
                           Text(
-                            '카포를 ${downTuning(widget.changeChord)}번째 프렛에 끼우고 연주',
+                            '카포를 ${12 - int.parse(widget.changeChord)}번째 프렛에 끼우고 연주',
                             style: TextStyle(
                                 fontSize: 25, fontWeight: FontWeight.bold),
                           ),
@@ -390,11 +384,11 @@ class _SavedPageState extends State<SavedPage> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: (){
-          // Navigator.pop(context);
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => MyStatefulWidget()),
-          );
+          Navigator.pop(context);
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(builder: (context) => MyStatefulWidget()),
+          // );
         },
         child: Icon(
           Icons.arrow_back,
