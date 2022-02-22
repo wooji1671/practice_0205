@@ -6,17 +6,21 @@ void main() {
   runApp(const MyApp());
 }
 
+MyStatefulWidget msw = MyStatefulWidget();
+
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: MyStatefulWidget(),
+      home: msw,
       debugShowCheckedModeBanner: false,
     );
   }
 }
+
+SavedPage sp = SavedPage();
 
 class MyStatefulWidget extends StatefulWidget {
   const MyStatefulWidget({Key? key}) : super(key: key);
@@ -30,9 +34,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   static List<Widget> _widgetOptions = <Widget>[
     MainPage(),
-    SavedPage(
-      changeChord: '0', changeKey: '올림', savedMusic: '',
-    ),
+    sp,
     Text(
       'Index 2: Settings',
     ),
@@ -318,15 +320,14 @@ class _SecondPageState extends State<SecondPage> {
                                 onPressed: () {
                                   setState(() {
                                     musics.add(input);
+                                    sp.musics.add(input);
+                                    sp.chords.add(int.parse(widget.changeChord));
+                                    sp.keys.add(widget.changeKey);
                                   });
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => SavedPage(
-                                          changeChord: widget.changeChord,
-                                          changeKey: widget.changeKey,
-                                          savedMusic: input,
-                                        )),
+                                        builder: (context) => sp),
                                   );
                                   final snackBar = SnackBar(
                                     content: const Text('저장되었습니다.'),
@@ -347,36 +348,20 @@ class _SecondPageState extends State<SecondPage> {
 }
 
 class SavedPage extends StatefulWidget {
-  String changeChord;
-  String changeKey;
-  String savedMusic;
+  List<String> musics = [];
+  List<int> chords = [];
+  List<String> keys = [];
 
-  SavedPage({Key? key, required this.changeChord, required this.changeKey, required this.savedMusic}) : super(key: key);
+  SavedPage({Key? key}) : super(key: key);
 
   @override
   _SavedPageState createState() => _SavedPageState();
 }
 
 class _SavedPageState extends State<SavedPage> {
-  List musics = <String>[];
-  List chords = <int>[];
-  List keys = <String>[];
-  String? musicinput;
-  int? chordinput;
-  String? keyinput;
-
   @override
   void initState() {
     super.initState();
-    setState(() {
-      musicinput = widget.savedMusic;
-      chordinput = int.parse(widget.changeChord);
-      keyinput = widget.changeKey;
-      musics.add(musicinput);
-      chords.add(chordinput);
-      keys.add(keyinput);
-    });
-    //musics.add("Oasis- Live Forever");
   }
 
   @override
@@ -384,11 +369,11 @@ class _SavedPageState extends State<SavedPage> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: (){
-          Navigator.pop(context);
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(builder: (context) => MyStatefulWidget()),
-          // );
+          // Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => msw),
+          );
         },
         child: Icon(
           Icons.arrow_back,
@@ -396,17 +381,15 @@ class _SavedPageState extends State<SavedPage> {
         ),
       ),
       body: ListView.builder(
-          itemCount: musics.length,
+          itemCount: widget.musics.length,
           itemBuilder: (BuildContext context, int index) {
             return ListTile(
-              title: Text(musics[index]),
-              // subtitle: Text(keys[index]),
-              // trailing: Text(chords[index]),
+              title: Text(widget.musics[index]),
               subtitle: Text(
-                  (keys[index] == '올림')
-                      ? '카포를 ${chords[index]}번째 프렛에 끼우고 연주'
-                      : '카포를 ${12 - chords[index]}번째 프렛에 끼우고 연주 또는 '
-                      '카포를 ${chords[index]}번째 프렛에 끼우고 정튜닝 후 카포 제거하고 연주'
+                  (widget.keys[index] == '올림')
+                      ? '카포를 ${widget.chords[index]}번째 프렛에 끼우고 연주'
+                      : '카포를 ${12 - widget.chords[index]}번째 프렛에 끼우고 연주 또는 '
+                      '카포를 ${widget.chords[index]}번째 프렛에 끼우고 정튜닝 후 카포 제거하고 연주'
               ),
             );
           }),
