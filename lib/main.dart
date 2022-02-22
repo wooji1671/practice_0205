@@ -6,6 +6,7 @@ void main() {
   runApp(const MyApp());
 }
 
+int selectedindex= 0;
 MyStatefulWidget msw = MyStatefulWidget();
 
 class MyApp extends StatelessWidget {
@@ -23,14 +24,15 @@ class MyApp extends StatelessWidget {
 SavedPage sp = SavedPage();
 
 class MyStatefulWidget extends StatefulWidget {
-  const MyStatefulWidget({Key? key}) : super(key: key);
+
+  MyStatefulWidget({Key? key}) : super(key: key);
 
   @override
   _MyStatefulWidgetState createState() => _MyStatefulWidgetState();
 }
 
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
-  int _selectedIndex = 0;
+  // int _selectedIndex = 0;
 
   static List<Widget> _widgetOptions = <Widget>[
     MainPage(),
@@ -42,7 +44,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      selectedindex = index;
     });
   }
 
@@ -52,7 +54,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       appBar: AppBar(
         title: const Text('Guitar Chords Changer'),
       ),
-      body: _widgetOptions.elementAt(_selectedIndex),
+      body: _widgetOptions.elementAt(selectedindex),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -64,7 +66,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
           BottomNavigationBarItem(
               icon: Icon(Icons.settings), label: 'settings'),
         ],
-        currentIndex: _selectedIndex,
+        currentIndex: selectedindex,
         selectedItemColor: Colors.indigo,
         onTap: _onItemTapped,
       ),
@@ -369,6 +371,9 @@ class _SavedPageState extends State<SavedPage> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: (){
+          setState(() {
+            selectedindex = 1;
+          });
           // Navigator.pop(context);
           Navigator.push(
             context,
