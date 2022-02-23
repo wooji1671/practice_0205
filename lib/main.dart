@@ -37,9 +37,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   static List<Widget> _widgetOptions = <Widget>[
     MainPage(),
     sp,
-    Text(
-      'Index 2: Settings',
-    ),
+    SettingPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -98,6 +96,7 @@ class _MainPageState extends State<MainPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Image.asset('images/img_1.jpg', height: 200, width: 400,),
             Container(
               margin: EdgeInsets.all(10),
               child: Text('원키에서'),
@@ -401,3 +400,13 @@ class _SavedPageState extends State<SavedPage> {
     );
   }
 }
+
+class SettingPage extends StatelessWidget {
+  const SettingPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+
