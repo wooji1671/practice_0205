@@ -1,6 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,7 +40,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   static List<Widget> _widgetOptions = <Widget>[
     MainPage(),
     sp,
-    SettingPage(),
+    HelpPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -50,6 +53,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Guitar Chords Changer'),
       ),
       body: _widgetOptions.elementAt(selectedindex),
@@ -62,7 +66,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
           BottomNavigationBarItem(
               icon: Icon(Icons.save_outlined), label: 'saved change'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.settings), label: 'settings'),
+              icon: Icon(Icons.help_outline_outlined), label: 'help'),
         ],
         currentIndex: selectedindex,
         selectedItemColor: Colors.indigo,
@@ -306,7 +310,7 @@ class _SecondPageState extends State<SecondPage> {
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                          title: Text("코드 설정 저장하기"),
+                          title: Text("코드 설정 저장"),
                           content: TextField(
                             decoration: InputDecoration(
                               helperText: '저장될 이름을 입력하세요.',
@@ -324,14 +328,16 @@ class _SecondPageState extends State<SecondPage> {
                                     sp.musics.add(input);
                                     sp.chords.add(int.parse(widget.changeChord));
                                     sp.keys.add(widget.changeKey);
+                                    selectedindex = 1;
                                   });
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => sp),
+                                        builder: (context) => msw),
                                   );
                                   final snackBar = SnackBar(
                                     content: const Text('저장되었습니다.'),
+                                    duration: Duration(seconds: 1),
                                   );
                                   ScaffoldMessenger.of(context)
                                       .showSnackBar(snackBar);
@@ -368,45 +374,260 @@ class _SavedPageState extends State<SavedPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: (){
-          setState(() {
-            selectedindex = 1;
-          });
-          // Navigator.pop(context);
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => msw),
-          );
-        },
-        child: Icon(
-          Icons.arrow_back,
-          color: Colors.white,
-        ),
-      ),
       body: ListView.builder(
           itemCount: widget.musics.length,
           itemBuilder: (BuildContext context, int index) {
-            return ListTile(
-              title: Text(widget.musics[index]),
-              subtitle: Text(
-                  (widget.keys[index] == '올림')
-                      ? '카포를 ${widget.chords[index]}번째 프렛에 끼우고 연주'
-                      : '카포를 ${12 - widget.chords[index]}번째 프렛에 끼우고 연주 또는 '
-                      '카포를 ${widget.chords[index]}번째 프렛에 끼우고 정튜닝 후 카포 제거하고 연주'
+            // return ListTile(
+            //   title: Text(widget.musics[index]),
+            //   subtitle: Text(
+            //       (widget.keys[index] == '올림')
+            //           ? '카포를 ${widget.chords[index]}번째 프렛에 끼우고 연주'
+            //           : '카포를 ${12 - widget.chords[index]}번째 프렛에 끼우고 연주 또는 '
+            //           '카포를 ${widget.chords[index]}번째 프렛에 끼우고 정튜닝 후 카포 제거하고 연주'
+            //   ),
+            // );
+            return Dismissible(
+              key: Key(widget.musics[index]),
+              child: ListTile(
+                title: Text(widget.musics[index]),
+                subtitle: Text(
+                   (widget.keys[index] == '올림')
+                       ? '카포를 ${widget.chords[index]}번째 프렛에 끼우고 연주'
+                       : '카포를 ${12 - widget.chords[index]}번째 프렛에 끼우고 연주 또는 '
+                       '카포를 ${widget.chords[index]}번째 프렛에 끼우고 정튜닝 후 카포 제거하고 연주'
+               ),
               ),
+              background: Container(color: Colors.red,),
+              onDismissed: (direction) {
+                setState(() {
+                  widget.musics.removeAt(index);
+                });
+              },
+              confirmDismiss: (direction) async {
+                return await showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text("코드 설정 삭제"),
+                        content: const Text("항목을 삭제하시겠습니까?"),
+                        actions: <Widget> [
+                          FlatButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text("삭제")
+                          ),
+                          FlatButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text("취소"),
+                          ),
+                        ],
+                      );
+                    }
+                );
+              },
             );
           }),
     );
   }
 }
 
-class SettingPage extends StatelessWidget {
-  const SettingPage({Key? key}) : super(key: key);
+class HelpPage extends StatefulWidget {
+  HelpPage({Key? key}) : super(key: key);
+
+  @override
+  State<HelpPage> createState() => _HelpPageState();
+}
+
+class _HelpPageState extends State<HelpPage> {
+  List<bool> _expanded = [false, false, false, false];
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+      resizeToAvoidBottomInset : false,
+      body: ListView(
+        children: [
+          Container(
+            margin: EdgeInsets.symmetric(vertical: 20),
+          ),
+          Text(
+            "FAQ",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 40,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.symmetric(vertical: 20),
+          ),
+          ExpansionPanelList(
+            children: [
+              ExpansionPanel(
+                isExpanded: _expanded[0],
+                  headerBuilder: (context, isExpanded){
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 15, top: 10),
+                      child: Text('카포가 뭔가요?', style: TextStyle(fontSize: 20)),
+                    );
+                  },
+                  body: Column(
+                    children: [
+                      Image.asset('images/img_2.jpg', height: 200, width: 200,),
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Text('카포는 기타의 모든 현을 눌러주어 현의 음정을 조절하도록 해주는 보조기구입니다.')
+                      ),
+                      Padding(
+                          padding: const EdgeInsets.only(bottom: 5),
+                          child: Text('사진처럼 기타의 프렛에 물리듯 끼워 사용합니다.')
+                      ),
+                      Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Text('카포는 기타 1프렛에 가깝게, 수평으로 장착할수록 좋습니다. 1프렛에서 멀어질수록, 수평에서 어긋날수록 음정이 틀어질 위험이 있기 때문입니다.')
+                      ),
+                    ],
+                  ),
+                canTapOnHeader: true,
+              ),
+              ExpansionPanel(
+                isExpanded: _expanded[1],
+                headerBuilder: (context, isExpanded){
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 15, top: 10),
+                    child: Text('프렛이 뭔가요?', style: TextStyle(fontSize: 20)),
+                  );
+                },
+                body: Column(
+                  children: [
+                    Image.asset('images/img_3.png', height: 200, width: 200,),
+                    Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Text('프렛은 기타 지판에서 은색 쇠막대로 구분되어 있는 세로칸 하나하나를 의미합니다.')
+                    ),
+                    Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Text('사진 기준 왼쪽 칸부터 1프렛, 2프렛...이라고 부릅니다.')
+                    ),
+                  ],
+                ),
+                canTapOnHeader: true,
+              ),
+              ExpansionPanel(
+                isExpanded: _expanded[2],
+                headerBuilder: (context, isExpanded){
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 15, top: 10),
+                    child: Text('몇 키를 올림(내림) 했는지 어떻게 계산하나요?', style: TextStyle(fontSize: 20)),
+                  );
+                },
+                body: Column(
+                  children: [
+                    Image.asset('images/img_4.png', height: 200, width: 200,),
+                    Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Text('코드는 C키에서 B키까지로 구성되어 있습니다.')
+                    ),
+                    Padding(
+                        padding: const EdgeInsets.only(bottom: 5),
+                        child: Text('코드는 원처럼 반복됩니다(CDEFGABCDEFGAB...).')
+                    ),
+                    Padding(
+                        padding: const EdgeInsets.only(bottom: 5),
+                        child: Text('원 기준으로 코드 1칸이 달라지는 것은 1키가 바뀌는 것과 같습니다.')
+                    ),
+                    Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Text('원 기준으로 오른쪽 방향으로 돌면 키 올림, 왼쪽 방향으로 돌면 키 내림입니다.')
+                    ),
+                    Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Text('예시: 코드를 G키에서 A#키로 높이자! -> 3키 올림')
+                    ),
+                  ],
+                ),
+                canTapOnHeader: true,
+              ),
+              ExpansionPanel(
+                isExpanded: _expanded[3],
+                headerBuilder: (context, isExpanded){
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 15, top: 10),
+                    child: Text('정튜닝은 어떻게 하는 건가요?', style: TextStyle(fontSize: 20)),
+                  );
+                },
+                body: Column(
+                  children: [
+                    HelpVideo(videoId: 'DuwWfAOzfy8',),
+                    Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Text('위의 영상을 참고하세요.')
+                    ),
+                  ],
+                ),
+                canTapOnHeader: true,
+              ),
+
+            ],
+            expandedHeaderPadding: EdgeInsets.all(0),
+            expansionCallback: (i, isExpanded) =>
+                setState(() =>
+                    _expanded[i] = !isExpanded
+                )
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class HelpVideo extends StatefulWidget {
+  String videoId;
+
+  HelpVideo({Key? key, required this.videoId}) : super(key: key);
+
+  @override
+  _HelpVideoState createState() => _HelpVideoState();
+}
+
+class _HelpVideoState extends State<HelpVideo> {
+  late YoutubePlayerController _controller;
+
+  @override
+
+  void initState() {
+    _controller = YoutubePlayerController(
+      initialVideoId: 'DuwWfAOzfy8',
+      flags: const YoutubePlayerFlags(
+        mute: false,
+        autoPlay: false,
+        disableDragSeek: false,
+        loop: false,
+        isLive: false,
+        forceHD: false,
+        enableCaption: true,
+      ),
+    );
+  }
+
+  Widget build(BuildContext context) {
+    return Container(
+        width: 360,
+        height:195,
+        child: YoutubePlayer(
+          controller: _controller,
+          width: 360,
+          aspectRatio : 16 / 9,
+            actionsPadding: const EdgeInsets.only(left: 16.0),
+            bottomActions: [
+              CurrentPosition(),
+              const SizedBox(width: 10.0),
+              ProgressBar(isExpanded: true),
+              const SizedBox(width: 10.0),
+              RemainingDuration(),
+              FullScreenButton(),
+      ]
+        )
+    );
   }
 }
 
